@@ -12,3 +12,7 @@ void Timestepper::take_timestep(const colvec_t& a_rhs) {
 const colvec_t& Timestepper::get_state() const {
     return m_curr_state;
 }
+
+real_t Timestepper::get_dt() const {
+    return m_dt;
+}

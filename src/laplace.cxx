@@ -29,6 +29,6 @@ LaplaceOperator1D::LaplaceOperator1D(const int a_npoints, const real_t a_right_b
     m_boundary_term(a_npoints - 1) = a_right_bc * scale;
 }
 
-colvec_t LaplaceOperator1D::operator()(const colvec_t& a_apply_to) {
+colvec_t LaplaceOperator1D::apply(const colvec_t& a_apply_to) {
     return m_laplacian_matrix * a_apply_to + m_boundary_term;
 }
