@@ -73,8 +73,36 @@ void fwd_euler_stability_test(const real_t alpha, const int npoints) {
     std::cout << this_will_work.get_state().maxCoeff() << std::endl;
 }
 
+void fwd_euler_convergence_test(const real_t alpha, const int npoints) {
+    //set the right boundary condition (arbitrarily) to zero, make the IC
+    constexpr real_t right_bc = 0.0;
+    colvec_t ic = make_expo_ic(npoints, right_bc);
+
+    //compute the stability threshold
+    auto thresh_dt = compute_stability_threshold(alpha, npoints);
+    auto dt = 0.8 * thresh_dt;
+
+    //compute the theoretical time to convergence
+    auto converged_time = 0.5 * alpha;
+    int converged_steps = converged_time / dt;
+
+    //construct the timestepper and laplace operator
+    Timestepper ts(ic, dt);
+    LaplaceOperator1D laplace(npoints, right_bc);
+
+    int write_interval = converged_steps / 10;
+    //actually run the test!
+    for (int t = 0; t < converged_steps; t++) {
+        ts.take_timestep(alpha * laplace.apply(ts.get_state()));
+        if ((t+1) % write_interval == 0) {
+            std::cout << ts.get_state() << std::endl;
+        }
+    }
+}
+
 int main() {
     constexpr real_t alpha = 2.00;
     constexpr int npoints = 10;
-    fwd_euler_stability_test(alpha, npoints);
+    //fwd_euler_stability_test(alpha, npoints);
+    fwd_euler_convergence_test(alpha, npoints);
 }
