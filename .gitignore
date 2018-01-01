@@ -1,4 +1,4 @@
 *.swp
-*.txt
 *.png
 build
+tests
