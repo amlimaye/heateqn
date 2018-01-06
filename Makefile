@@ -4,11 +4,18 @@ CXXFLAGS=-std=c++11 -O0 -Wall -Wextra -Werror -g
 SRC_DIR=src
 BUILD_DIR=build
 
+GTEST_LDFLAGS=-lgtest
+
 timestepper: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
 laplace: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
+
+laplacetest: Makefile laplace
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
+		$(SRC_DIR)/$@.cxx \
+		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
 
 build: Makefile timestepper laplace
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(BUILD_DIR)/main  \
