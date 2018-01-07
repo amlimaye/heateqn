@@ -6,21 +6,21 @@
 
 TEST(LaplaceOperator1DTest, SpacingCalculation) {
     std::vector<int> npoints_list = {1, 2, 5, 10, 100, 1000};
-    for (auto&& npoints : npoints_list) {
+    for (const auto& npoints : npoints_list) {
         auto lap = LaplaceOperator1D(npoints, 0.0);
         double expected_dx = 1.0 / (npoints + 1);
         EXPECT_DOUBLE_EQ(lap.get_dx(), expected_dx);
     }
 }
 
-TEST(LaplaceOperator1DTest, BoundaryTerm) {
+TEST(LaplaceOperator1DTest, ScaledBoundaryTerm) {
     std::vector<int> npoints_list = {5, 10, 50, 100};
     std::vector<real_t> right_bcs = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
-    for (auto&& npoints : npoints_list) {
-        for (auto&& right_bc : right_bcs) {
+    for (const auto& npoints : npoints_list) {
+        for (const auto& right_bc : right_bcs) {
             //construct the laplace operator and get its boundary term
             auto lap = LaplaceOperator1D(npoints, right_bc);
-            auto bc = lap.get_boundary_term();
+            auto bc = lap.get_scaled_boundary_term();
             auto scale = std::pow(lap.get_dx(), -2);
 
             for (int l = 0; l < npoints; l++) {
@@ -41,6 +41,31 @@ TEST(LaplaceOperator1DTest, BoundaryTerm) {
     }
 }
 
+TEST(LaplaceOperator1DTest, UnscaledBoundaryTerm) {
+    int npoints = 100;
+    std::vector<real_t> right_bcs = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
+    for (const auto& right_bc : right_bcs) {
+        //construct the laplace operator and get its boundary term
+        auto lap = LaplaceOperator1D(npoints, right_bc);
+        auto bc = lap.get_boundary_term();
+
+        for (int l = 0; l < npoints; l++) {
+            // left boundary is scaled to 1, so should just be 1/(dx)**2
+            if (l == 0) {
+                EXPECT_DOUBLE_EQ(bc[l], 1.0);
+            }
+            // right boundary should be right_bc/(dx)**2
+            else if (l == npoints-1) {
+                EXPECT_DOUBLE_EQ(bc[l], right_bc);
+            }
+            // if not on the boundary, this should be exactly zero
+            else {
+                EXPECT_DOUBLE_EQ(bc[l], 0.0);
+            }
+        }
+    }
+}
+
 TEST(LaplaceOperator1DTest, LaplacianOfAStraightLine) {
     /*
      * double precision arithmetic gives us 15 digits of precision, but since
@@ -49,7 +74,7 @@ TEST(LaplaceOperator1DTest, LaplacianOfAStraightLine) {
      * this accounts for the amount of precision loss here.
      */
     std::vector<std::tuple<int, int>> npoints_and_precision_list = 
-        {{2, 14}, {20, 12}, {200, 10}, {2000, 8}};
+        {{2, 15}, {20, 13}, {200, 11}, {2000, 9}};
 
     //makes a vector whose elements decay linearly on the interval (1.0, 0.0)
     auto mkstraightline = [](int npoints, colvec_t& u) {
@@ -61,7 +86,7 @@ TEST(LaplaceOperator1DTest, LaplacianOfAStraightLine) {
         return u;
     };
 
-    for (auto&& elem : npoints_and_precision_list) {
+    for (const auto& elem : npoints_and_precision_list) {
         auto npoints = std::get<0>(elem);
         auto digits = std::get<1>(elem);
         auto lap = LaplaceOperator1D(npoints, 0.0);
