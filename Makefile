@@ -6,8 +6,6 @@ BUILD_DIR=build
 
 GTEST_LDFLAGS=-lgtest
 
-timestepper: Makefile
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
 laplace: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
@@ -16,6 +14,9 @@ laplacetest: Makefile laplace
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(SRC_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
+
+forward_euler: Makefile
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
 build: Makefile timestepper laplace
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(BUILD_DIR)/main  \
