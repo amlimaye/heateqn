@@ -10,7 +10,7 @@ GTEST_LDFLAGS=-lgtest
 laplace: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
-laplacetest: Makefile laplace
+laplace_test: Makefile laplace
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(SRC_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
