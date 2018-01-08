@@ -3,6 +3,8 @@
 #include "laplace.hxx"
 #include "forward_euler.hxx"
 
+#define EXPECT_NEAR_DIGITS(x,y,d) EXPECT_NEAR(x, y, std::pow(10, -(d)))
+
 void make_linear_ic(int npoints, const real_t& right_bc, colvec_t& u) {
     u.resize(npoints);
     auto drop_per_interval = (1.0 - right_bc) / (npoints + 1);
@@ -56,7 +58,7 @@ TEST(ForwardEulerTest, SimpleLinearIncrease) {
                 integrator.take_timestep(rhs);
                 auto state = integrator.get_state();
                 for (int l = 0; l < nentries; l++) {
-                    EXPECT_NEAR(state[l], (k+1) * dt * rate, std::pow(10, -digits));
+                    EXPECT_NEAR_DIGITS(state[l], (k+1) * dt * rate, digits);
                 }
             }
         }
@@ -135,7 +137,7 @@ TEST(ForwardEulerTest, LongTimeLaplaceConvergence) {
 
             //check if we are near the linear steady state
             for (int k = 0; k < npoints; k++) {
-                EXPECT_NEAR(state[k], steady_state[k], std::pow(10, -digits));
+                EXPECT_NEAR_DIGITS(state[k], steady_state[k], digits);
             }
         }
     }

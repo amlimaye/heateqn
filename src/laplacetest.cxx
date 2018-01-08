@@ -4,6 +4,8 @@
 #include <tuple>
 #include "laplace.hxx"
 
+#define EXPECT_NEAR_DIGITS(x,y,d) EXPECT_NEAR(x, y, std::pow(10, -d))
+
 TEST(LaplaceOperator1DTest, SpacingCalculation) {
     std::vector<int> npoints_list = {1, 2, 5, 10, 100, 1000};
     for (const auto& npoints : npoints_list) {
@@ -96,7 +98,7 @@ TEST(LaplaceOperator1DTest, LaplacianOfAStraightLine) {
         auto Lu = lap.apply(u);
 
         for (int k = 0; k < npoints; k++) {
-            EXPECT_NEAR(Lu[k], 0.0, std::pow(10, -digits));
+            EXPECT_NEAR_DIGITS(Lu[k], 0.0, digits);
         }
     }
 }
