@@ -24,47 +24,30 @@ void make_expo_ic(int npoints, const real_t& right_bc, colvec_t& u) {
     } 
 };
 
+TEST(BackwardEulerTest, SimpleLinearIncrease) {
+    int digits = 15;
 
-/*TEST(ForwardEulerTest, LaplaceStabilityThreshold) {
-    std::vector<real_t> alpha_list = {0.5, 1.0, 10.0};
-    std::vector<int> npoints_list = {10, 50, 100};
-    real_t right_bc = 0.5;
+    std::vector<real_t> rates_list = {1, 10, 50};
+    std::vector<real_t> dt_list = {0.01, 0.1, 1, 10, 50};
+    int nsteps = 2;
+    int nentries = 10;
+    for (const auto& dt : dt_list) {
+        for (const auto& rate : rates_list) {
+            colvec_t u(nentries);
+            u.fill(0.0);
+            auto transform = ConstantShift(rate, nentries);
+            auto integrator = BackwardEuler(&transform, u, dt);
 
-    for (const auto& alpha : alpha_list) {
-        for (const auto& npoints : npoints_list) {
-            int nsteps = (int) 50000.0 / alpha;
-            colvec_t initial_condition;
-            make_expo_ic(npoints, right_bc, initial_condition);
-
-            auto laplace = LaplaceOperator1D(npoints, right_bc);
-
-            auto thresh_dt = compute_stability_threshold(alpha, npoints);
-            auto stable_integrator = ForwardEuler(initial_condition, 0.98 *
-                    thresh_dt);
-            auto unstable_integrator = ForwardEuler(initial_condition, 1.02 *
-                    thresh_dt);
-
-            for (int t = 0; t < nsteps; t++) {
-                stable_integrator.take_timestep(alpha *
-                        laplace.apply(stable_integrator.get_state()));
-                unstable_integrator.take_timestep(alpha *
-                        laplace.apply(unstable_integrator.get_state()));
-            }
-
-            //stable integration should always produce values of magnitude less
-            //than 1.0 because we scaled the initial condition to a max value
-            //of 1.0.  unstable integration, on the other hand, will eventually
-            //produce values that get very large (they may just NaN out)
-            auto stable_state = stable_integrator.get_state();
-            auto unstable_state = unstable_integrator.get_state();
-            for (int k = 0; k < npoints; k++) {
-                EXPECT_LE(std::abs(stable_state[k]), 1.0);
-                EXPECT_TRUE(std::abs(unstable_state[k]) > 1.0 ||
-                        isnan(unstable_state[k]));
+            for (int k = 0; k < nsteps; k++) {
+                integrator.take_timestep();
+                auto state = integrator.get_state();
+                for (int l = 0; l < nentries; l++) {
+                    EXPECT_NEAR_DIGITS(state[l], (k + 1) * dt * rate, digits);
+                }
             }
         }
     }
-}*/
+}
  
 TEST(BackwardEulerTest, LongTimeLaplaceConvergence) {
     //TODO: why am I losing digits here?
