@@ -1,12 +1,15 @@
 #include "forward_euler.hxx"
 
-ForwardEuler::ForwardEuler(colvec_t a_ic, real_t a_dt) :
+ForwardEuler::ForwardEuler(AffineTransform* a_transform, colvec_t a_ic, 
+                           real_t a_dt) :
+    m_transform(a_transform),
     m_curr_state(a_ic),
     m_dt(a_dt)
 {};
 
-void ForwardEuler::take_timestep(const colvec_t& a_rhs) {
-    m_curr_state += a_rhs * m_dt;
+void ForwardEuler::take_timestep() {
+    m_curr_state += m_dt * 
+        m_transform->apply(static_cast<const colvec_t>(m_curr_state));
 }
 
 const colvec_t& ForwardEuler::get_state() const {
