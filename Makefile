@@ -28,7 +28,7 @@ forward_euler_test: Makefile forward_euler laplace constant_shift
 backward_euler: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
-backward_euler_test: Makefile backward_euler laplace
+backward_euler_test: Makefile backward_euler laplace constant_shift
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(SRC_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))

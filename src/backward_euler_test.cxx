@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <math.h>
 #include "laplace.hxx"
+#include "constant_shift.hxx"
 #include "backward_euler.hxx"
 
 #define EXPECT_NEAR_DIGITS(x,y,d) EXPECT_NEAR(x, y, std::pow(10, -(d)))
@@ -88,11 +89,9 @@ TEST(BackwardEulerTest, LongTimeLaplaceConvergence) {
 
             //integrate for required # of steps
             auto laplace = LaplaceOperator1D(npoints, right_bc);
-            auto integrator = BackwardEuler(initial_condition, dt);
+            auto integrator = BackwardEuler(&laplace, initial_condition, dt);
             for (int t = 0; t < converged_steps; t++) {
-                integrator.take_timestep(alpha *
-                        laplace.get_scaled_laplacian(),
-                        alpha*laplace.get_scaled_boundary_term());
+                integrator.take_timestep();
             }
             auto state = integrator.get_state();
 
