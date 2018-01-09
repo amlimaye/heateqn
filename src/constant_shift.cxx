@@ -1,4 +1,4 @@
-#include "constant_shift.hxx"
+#include <operators/constant_shift.hxx>
 
 ConstantShift::ConstantShift(const real_t a_shift, const int a_nrows) : 
     m_shift(a_shift),

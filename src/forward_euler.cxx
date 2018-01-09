@@ -1,4 +1,4 @@
-#include "forward_euler.hxx"
+#include <integrators/forward_euler.hxx>
 
 ForwardEuler::ForwardEuler(AffineTransform* a_transform, colvec_t a_ic, 
                            real_t a_dt) :

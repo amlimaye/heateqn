@@ -2,7 +2,7 @@
 #include <limits>
 #include <vector>
 #include <tuple>
-#include "laplace.hxx"
+#include <operators/laplace.hxx>
 
 #define EXPECT_NEAR_DIGITS(x,y,d) EXPECT_NEAR(x, y, std::pow(10, -d))
 

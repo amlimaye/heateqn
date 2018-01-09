@@ -1,5 +1,5 @@
-#include "types.hxx"
-#include "affine_transform.hxx"
+#include <types.hxx>
+#include <operators/affine_transform.hxx>
 
 class LaplaceOperator1D : public AffineTransform {
 public:

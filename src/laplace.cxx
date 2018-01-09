@@ -1,5 +1,4 @@
-#include "laplace.hxx"
-#include <iostream>
+#include <operators/laplace.hxx>
 
 LaplaceOperator1D::LaplaceOperator1D(const int npoints, const real_t right_bc, 
                                      const real_t scale_factor) {
