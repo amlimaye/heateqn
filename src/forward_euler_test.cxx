@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <math.h>
 #include "laplace.hxx"
+#include "constant_shift.hxx"
 #include "forward_euler.hxx"
 
 #define EXPECT_NEAR_DIGITS(x,y,d) EXPECT_NEAR(x, y, std::pow(10, -(d)))
@@ -49,16 +50,15 @@ TEST(ForwardEulerTest, SimpleLinearIncrease) {
     for (const auto& dt : dt_list) {
         for (const auto& rate : rates_list) {
             colvec_t u(nentries);
-            colvec_t rhs(nentries);
             u.fill(0.0);
-            rhs.fill(rate);
-            auto integrator = ForwardEuler(u, dt);
+            auto transform = ConstantShift(rate, nentries);
+            auto integrator = ForwardEuler(&transform, u, dt);
 
             for (int k = 0; k < nsteps; k++) {
-                integrator.take_timestep(rhs);
+                integrator.take_timestep();
                 auto state = integrator.get_state();
                 for (int l = 0; l < nentries; l++) {
-                    EXPECT_NEAR_DIGITS(state[l], (k+1) * dt * rate, digits);
+                    EXPECT_NEAR_DIGITS(state[l], (k + 1) * dt * rate, digits);
                 }
             }
         }
@@ -67,7 +67,7 @@ TEST(ForwardEulerTest, SimpleLinearIncrease) {
 
 TEST(ForwardEulerTest, LaplaceStabilityThreshold) {
     std::vector<real_t> alpha_list = {0.5, 1.0, 10.0};
-    std::vector<int> npoints_list = {10, 50, 100};
+    std::vector<int> npoints_list = {10, 50};
     real_t right_bc = 0.5;
 
     for (const auto& alpha : alpha_list) {
@@ -76,19 +76,18 @@ TEST(ForwardEulerTest, LaplaceStabilityThreshold) {
             colvec_t initial_condition;
             make_expo_ic(npoints, right_bc, initial_condition);
 
-            auto laplace = LaplaceOperator1D(npoints, right_bc);
+            auto laplace = LaplaceOperator1D(npoints, right_bc, alpha);
 
             auto thresh_dt = compute_stability_threshold(alpha, npoints);
-            auto stable_integrator = ForwardEuler(initial_condition, 0.98 *
-                    thresh_dt);
-            auto unstable_integrator = ForwardEuler(initial_condition, 1.02 *
-                    thresh_dt);
+
+            auto stable_integrator = ForwardEuler(&laplace, initial_condition,
+                    0.98 * thresh_dt);
+            auto unstable_integrator = ForwardEuler(&laplace, initial_condition,
+                    1.02 * thresh_dt);
 
             for (int t = 0; t < nsteps; t++) {
-                stable_integrator.take_timestep(alpha *
-                        laplace.apply(stable_integrator.get_state()));
-                unstable_integrator.take_timestep(alpha *
-                        laplace.apply(unstable_integrator.get_state()));
+                stable_integrator.take_timestep();
+                unstable_integrator.take_timestep();
             }
 
             //stable integration should always produce values of magnitude less
@@ -128,10 +127,10 @@ TEST(ForwardEulerTest, LongTimeLaplaceConvergence) {
             int converged_steps = converged_time / dt;
 
             //integrate for required # of steps
-            auto laplace = LaplaceOperator1D(npoints, right_bc);
-            auto integrator = ForwardEuler(initial_condition, dt);
+            auto laplace = LaplaceOperator1D(npoints, right_bc, alpha);
+            auto integrator = ForwardEuler(&laplace, initial_condition, dt);
             for (int t = 0; t < converged_steps; t++) {
-                integrator.take_timestep(alpha * laplace.apply(integrator.get_state()));
+                integrator.take_timestep();
             }
             auto state = integrator.get_state();
 

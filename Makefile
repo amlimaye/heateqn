@@ -1,10 +1,13 @@
 CXX=g++
 INCLUDES=-I/usr/local/Cellar/eigen/3.3.4/include/eigen3
-CXXFLAGS=-std=c++11 -O0 -Wall -Wextra -Werror -g
+CXXFLAGS=-std=c++11 -O3 -Wall -Wextra -Werror -g
 SRC_DIR=src
 BUILD_DIR=build
 
 GTEST_LDFLAGS=-lgtest
+
+constant_shift: Makefile
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
 laplace: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
@@ -17,7 +20,7 @@ laplace_test: Makefile laplace
 forward_euler: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
-forward_euler_test: Makefile forward_euler laplace
+forward_euler_test: Makefile forward_euler laplace constant_shift
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(SRC_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
