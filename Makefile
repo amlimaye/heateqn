@@ -62,13 +62,13 @@ backward_euler_test: Makefile backward_euler laplace constant_shift
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
 
 #instructive examples
-pyexample_convergence_rate: Makefile forward_euler scale
+pyexample_convergence_rate: Makefile forward_euler backward_euler scale
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(PYBIND_FLAGS) -o $(BUILD_DIR)/$@.so \
 		$(EXAMPLE_DIR)/$(subst pyexample_,,$@)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
 	$(COPY) $(BUILD_DIR)/$@.so $(EXAMPLE_DIR)/$(subst pyexample_,,$@)/$@.so
 	$(COPY) $(BUILD_DIR)/$@.so.dSYM $(EXAMPLE_DIR)/$(subst pyexample_,,$@)/$@.so.dSYM
-
+	python $(EXAMPLE_DIR)/$(subst pyexample_,,$@)/$(subst pyexample_,,$@).py
 
 alltests: Makefile laplace_test forward_euler_test backward_euler_test \
 			constant_shift_test scale_test
