@@ -51,7 +51,7 @@ TEST(ForwardEulerTest, SimpleLinearIncrease) {
         for (const auto& rate : rates_list) {
             colvec_t u(nentries);
             u.fill(0.0);
-            auto transform = ConstantShift(rate, nentries);
+            auto transform = ConstantShift(nentries, rate);
             auto integrator = ForwardEuler(&transform, u, dt);
 
             for (int k = 0; k < nsteps; k++) {

@@ -1,8 +1,8 @@
 #include <operators/constant_shift.hxx>
 
-ConstantShift::ConstantShift(const real_t a_shift, const int a_nrows) : 
-    m_shift(a_shift),
-    m_nrows(a_nrows)
+ConstantShift::ConstantShift(const int a_nrows, const real_t a_shift) : 
+    m_nrows(a_nrows),
+    m_shift(a_shift)
 {};
 
 colvec_t ConstantShift::apply(const colvec_t& x) const {

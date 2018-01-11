@@ -3,7 +3,7 @@
 
 class ConstantShift : public AffineTransform {
 public:
-    ConstantShift(const real_t a_shift, const int a_nrows);
+    ConstantShift(const int a_nrows, const real_t a_shift);
 
     colvec_t        apply(const colvec_t& x) const;
     void            apply(colvec_t& x) const;
@@ -17,7 +17,7 @@ public:
     mat_t           get_scale() const;
     colvec_t        get_shift() const;
 
-    real_t m_shift;
     int m_nrows;
+    real_t m_shift;
 };
 
