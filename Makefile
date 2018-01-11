@@ -19,6 +19,9 @@ constant_shift: Makefile
 laplace: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
+scale: Makefile
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
+
 forward_euler: Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@.o $(SRC_DIR)/$@.cxx
 
@@ -27,6 +30,11 @@ backward_euler: Makefile
 
 
 laplace_test: Makefile laplace
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
+		$(TEST_DIR)/$@.cxx \
+		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
+
+scale_test: Makefile scale
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(TEST_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
@@ -41,7 +49,8 @@ backward_euler_test: Makefile backward_euler laplace constant_shift
 		$(TEST_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
 
-alltests: Makefile laplace_test forward_euler_test backward_euler_test
+alltests: Makefile laplace_test forward_euler_test backward_euler_test \
+			shift_test
 
 clean:
 	rm -rf $(BUILD_DIR)/main.dSYM $(BUILD_DIR)/main $(BUILD_DIR)/*.o
