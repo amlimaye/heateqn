@@ -1,3 +1,5 @@
 *.swp
 *.png
+*.so
+*.so.dSYM
 build
