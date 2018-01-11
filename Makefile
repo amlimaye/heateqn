@@ -34,6 +34,11 @@ laplace_test: Makefile laplace
 		$(TEST_DIR)/$@.cxx \
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
 
+constant_shift_test: Makefile constant_shift 
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
+		$(TEST_DIR)/$@.cxx \
+		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
+
 scale_test: Makefile scale
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(TEST_DIR)/$@.cxx \
@@ -50,7 +55,7 @@ backward_euler_test: Makefile backward_euler laplace constant_shift
 		$(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(filter-out Makefile, $^)))
 
 alltests: Makefile laplace_test forward_euler_test backward_euler_test \
-			shift_test
+			constant_shift_test scale_test
 
 clean:
 	rm -rf $(BUILD_DIR)/main.dSYM $(BUILD_DIR)/main $(BUILD_DIR)/*.o
