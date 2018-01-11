@@ -6,7 +6,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 def check_shlib_existence(scriptname):
-    shlib_name = 'pyexample_%s.so' % (scriptname.split('.py')[0])
+    shlib_name = 'pyexample_%s.so' % (os.path.basename(scriptname).split('.py')[0])
     shlib_path = os.path.join('.', shlib_name)
     print(shlib_path)
 
@@ -25,11 +25,15 @@ def load_module(scriptname):
     return mod
 
 def plot_results(results, outpath):
-    dts = [r[0] for r in results]
-    gerr = [r[1] for r in results]
+    final_times = [r[0] for r in results]
+    dts = [[elem[0] for elem in r[1]] for r in results]
+    gerrs = [[elem[1] for elem in r[1]] for r in results]
 
     plt.figure()
-    plt.plot(dts, gerr, 'bo-')
+    for final_time, dt, gerr in zip(final_times, dts, gerrs):
+        plt.plot(dt, gerr, 'o-', label='t=%0.2f' % final_time)
+
+    plt.legend()
     plt.xlabel(r'$\delta t$')
     plt.ylabel(r'$|y^e(t) - y(t)|$')
     plt.tight_layout()
