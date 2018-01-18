@@ -51,7 +51,6 @@ public:
     colvec_t            get_shift() const;
 
     real_t              get_dx() const {return m_dx;};
-    real_t              get_scale_factor() const {return m_scale_factor;};
     const mat_t&        get_laplacian() const;
     const colvec_t&     get_boundary_term() const;
 
