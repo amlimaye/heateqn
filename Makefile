@@ -31,7 +31,7 @@ COPY=cp -r
 %_utest: Makefile %_test.cxx %.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(filter %.cxx, $^) \
-		$(addprefix $(BUILD_DIR)/,$(filter %.o, $^))
+		$(addprefix $(BUILD_DIR)/, $(notdir $(filter %.o, $^)))
 
 #some classes have unit tests that depend on other classes
 TEST_OBJS=laplace.o constant_shift.o
