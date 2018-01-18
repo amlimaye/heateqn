@@ -1,4 +1,5 @@
 #include <types.hxx>
+#include <vector>
 #include <operators/affine_transform.hxx>
 
 class LaplaceOperator1D : public AffineTransform {
@@ -31,8 +32,10 @@ private:
 };
 
 class LaplaceOperator2D : public AffineTransform {
+public:
     //ctor
     LaplaceOperator2D(const int npoints_per_dim, 
+                      const colvec_t& boundary_values,
                       const real_t scale_factor = 1.0);
 
     colvec_t            apply(const colvec_t& x) const;
@@ -48,6 +51,7 @@ class LaplaceOperator2D : public AffineTransform {
     colvec_t            get_shift() const;
 
     real_t              get_dx() const {return m_dx;};
+    real_t              get_scale_factor() const {return m_scale_factor;};
     const mat_t&        get_laplacian() const;
     const colvec_t&     get_boundary_term() const;
 
@@ -56,4 +60,4 @@ private:
     real_t      m_scale_factor;
     mat_t       m_laplacian_matrix;
     colvec_t    m_boundary_term;
-}
+};
