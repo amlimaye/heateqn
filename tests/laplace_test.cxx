@@ -29,6 +29,71 @@ real_t sample_plane(const real_t x,
     return rz;
 }
 
+real_t sample_paraboloid(const real_t x,
+                         const real_t y,
+                         const real_t& curvature,
+                         const colvec_t& offset_vector) {
+    assert(offset_vector.size() == 2);
+    auto x_off = offset_vector(0);
+    auto y_off = offset_vector(1);
+
+    auto z = (x - x_off) * (x - x_off) + (y - y_off) * (y - y_off);
+    z *= (curvature / 2.0);
+    return z;
+}
+
+void make_parabolic_ic_and_bc(int npoints_per_dim, 
+                              const real_t curvature,
+                              const colvec_t& offset_vector, 
+                              colvec_t& u, colvec_t& bu) {
+    //resize u and bu to the right sizes
+    u.resize(npoints_per_dim * npoints_per_dim);
+    bu.resize(npoints_per_dim * 4);
+
+    //convert x,y index pair into a flat, x-major indexing scheme
+    auto get_gidx = [&] (const int x_idx, const int y_idx) -> int {
+        return x_idx + (npoints_per_dim * y_idx);
+    };
+
+    //fill in all points in the domain with the sampled plane
+    for (int k = 0; k < npoints_per_dim; k++) {
+        double x = (double) (k+1) / (npoints_per_dim+1);
+        for (int l = 0; l < npoints_per_dim; l++) {
+            double y = (double) (l+1) / (npoints_per_dim+1);
+            u(get_gidx(k, l)) = sample_paraboloid(x, y, curvature,
+                                                  offset_vector);
+        }
+    }
+
+    //fill in all points in the boundary
+    //left boundary
+    for (int k = 0; k < npoints_per_dim; k++) {
+        double y = (double) (k+1) / (npoints_per_dim+1);
+        bu(k) = sample_paraboloid(0.0, y, curvature, offset_vector);
+    }
+
+    //bottom boundary
+    for (int k = 0; k < npoints_per_dim; k++) {
+        double x = (double) (k+1) / (npoints_per_dim+1);
+        bu(npoints_per_dim + k) = 
+            sample_paraboloid(x, 0.0, curvature, offset_vector);
+    }
+
+    //right boundary
+    for (int k = 0; k < npoints_per_dim; k++) {
+        double y = (double) (k+1) / (npoints_per_dim+1);
+        bu(npoints_per_dim*2 + k) = 
+            sample_paraboloid(1.0, y, curvature, offset_vector);
+    }
+
+    //top boundary
+    for (int k = 0; k < npoints_per_dim; k++) {
+        double x = (double) (k+1) / (npoints_per_dim+1);
+        bu(npoints_per_dim*3 + k) = 
+            sample_paraboloid(x, 1.0, curvature, offset_vector);
+    }
+}
+
 void make_planar_ic_and_bc(int npoints_per_dim, 
                            const colvec_t& normal_vector,
                            const colvec_t& offset_vector,
@@ -78,14 +143,6 @@ void make_planar_ic_and_bc(int npoints_per_dim,
         double x = (double) (k+1) / (npoints_per_dim+1);
         bu(npoints_per_dim*3 + k) = 
             sample_plane(x, 1.0, normal_vector, offset_vector);
-    }
-
-    auto max_u_interior = u.maxCoeff();
-    auto max_u_boundary = bu.maxCoeff();
-    auto max_u = std::max(max_u_interior, max_u_boundary);
-    if (max_u != 0.0) {
-        u /= max_u;
-        bu /= max_u;
     }
 }
 
@@ -232,6 +289,36 @@ TEST(LaplaceOperator2DTest, UnscaledBoundaryTerm) {
         //check accuracy against reference
         for (int k = 0; k < npoints*npoints; k++) {
             EXPECT_DOUBLE_EQ(boundary_term(k), ref_boundary_term(k));
+        }
+    }
+}
+
+TEST(LaplaceOperator2DTest, LaplacianOfAParaboloid) {
+    int npoints = 20;
+    int digits = 9;
+
+    std::vector<real_t> curvature_list = {-2.0, -1.0, 0.5, 1.0, 2.0, 5.0, 10.0};
+    std::vector<real_t> x_offsets = {-5.0, -2.0, 0.0, 2.0, 5.0};
+    std::vector<real_t> y_offsets = {-4.0, -1.5, 0.0, 1.0, 3.6};
+
+    for (const auto& curvature : curvature_list) {
+        for (const auto& x_o : x_offsets) {
+            for (const auto& y_o : y_offsets) {
+                colvec_t offset_vector;
+                offset_vector.resize(2);
+                offset_vector << x_o, y_o;
+                
+                colvec_t u, bu; 
+                make_parabolic_ic_and_bc(npoints, curvature, 
+                                         offset_vector, u, bu);
+                
+                auto lap = LaplaceOperator2D(npoints, bu);
+                lap.apply(u);
+ 
+                for (int k = 0; k < npoints*npoints; k++) {
+                    EXPECT_NEAR_DIGITS(u[k], 2.0 * curvature, digits);
+                }
+            }
         }
     }
 }
