@@ -27,14 +27,8 @@ COPY=cp -r
 %.o: Makefile $(SRC_DIR)/%.cxx
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@ $(filter-out $<, $^)
 
-#domain.hxx is templated and hence header-only. haven't figured out how to do
-#the dependencies properly for this one
-domain_utest: Makefile domain_test.cxx 
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
-		$(filter %.cxx, $^)
-
 #unit tests for classes
-%_utest: Makefile %_test.cxx %.o
+%_utest: Makefile %_test.cxx %.o domain.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
 		$(filter %.cxx, $^) \
 		$(addprefix $(BUILD_DIR)/, $(notdir $(filter %.o, $^)))

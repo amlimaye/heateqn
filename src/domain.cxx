@@ -1,3 +1,5 @@
+#include <domain.hxx>
+
 Domain2D::Domain2D(int npoints_per_dim, real_t value) {
     m_npoints_per_dim = npoints_per_dim;
 
@@ -43,8 +45,7 @@ colvec_t Domain2D::get_boundary_corrector() const {
     return boundary_corrector;
 }
 
-template <typename Functor>
-void Domain2D::map_over_domain(Functor& f) {
+void Domain2D::map_over_domain(const std::function<real_t(real_t, real_t)>& f) {
     //convert x,y index pair into a flat, x-major indexing scheme
     auto get_gidx = [&] (const int x_idx, const int y_idx) -> int {
         return x_idx + (m_npoints_per_dim * y_idx);

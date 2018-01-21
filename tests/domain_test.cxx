@@ -30,8 +30,8 @@ TEST(Domain2DTest, InitializationAndGetters) {
     }
 }
 
-template <typename Functor>
-void reference_map_implementation(int npoints, Functor& f,
+typedef std::function<real_t(real_t, real_t)> Functor;
+void reference_map_implementation(int npoints, const Functor& f,
                                   colvec_t& u, colvec_t& bu) {
     u.resize(npoints * npoints);
     bu.resize(npoints * 4);

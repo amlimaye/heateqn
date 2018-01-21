@@ -1,3 +1,4 @@
+#pragma once
 #include <types.hxx>
 
 class Domain2D {
@@ -6,17 +7,14 @@ public:
     
     colvec_t& get_interior_data() {return m_interior_data;};
     colvec_t& get_boundary_data() {return m_boundary_data;};
-    int get_npoints_per_dim() {return m_npoints_per_dim;};
+    int get_npoints_per_dim() const {return m_npoints_per_dim;};
 
     colvec_t get_boundary_corrector() const;
 
-    template<typename Functor>
-    void map_over_domain(Functor& f);
+    void map_over_domain(const std::function<real_t(real_t, real_t)>& f);
 
 private:
     int m_npoints_per_dim;
     colvec_t m_interior_data;
     colvec_t m_boundary_data;
 };
-
-#include <domain.txx>
