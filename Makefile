@@ -18,7 +18,7 @@ PYBIND_FLAGS=-shared -fPIC -undefined dynamic_lookup $(PYBIND_INCL_DIR)
 
 CXX=g++
 INCLUDES=-I$(EIGEN_INCL_DIR) -I$(INCL_DIR) -I$(GTEST_INCL_DIR)
-CXXFLAGS=-std=c++11 -O3 -Wall -Wextra -Werror -g
+CXXFLAGS=-std=c++14 -O3 -Wall -Wextra -Werror -g
 DEPFLAGS=-MM
 
 COPY=cp -r
@@ -26,6 +26,12 @@ COPY=cp -r
 #class object files
 %.o: Makefile $(SRC_DIR)/%.cxx
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $(BUILD_DIR)/$@ $(filter-out $<, $^)
+
+#domain.hxx is templated and hence header-only. haven't figured out how to do
+#the dependencies properly for this one
+domain_utest: Makefile domain_test.cxx 
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(GTEST_LDFLAGS) -o $(BUILD_DIR)/$@ \
+		$(filter %.cxx, $^)
 
 #unit tests for classes
 %_utest: Makefile %_test.cxx %.o
