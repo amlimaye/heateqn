@@ -1,6 +1,7 @@
 #include <types.hxx>
 #include <vector>
 #include <operators/affine_transform.hxx>
+#include <domain.hxx>
 
 class LaplaceOperator1D : public AffineTransform {
 public:
@@ -34,8 +35,7 @@ private:
 class LaplaceOperator2D : public AffineTransform {
 public:
     //ctor
-    LaplaceOperator2D(const int npoints_per_dim, 
-                      const colvec_t& boundary_values,
+    LaplaceOperator2D(const Domain2D& domain, 
                       const real_t scale_factor = 1.0);
 
     colvec_t            apply(const colvec_t& x) const;

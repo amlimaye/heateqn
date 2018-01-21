@@ -34,9 +34,10 @@ LaplaceOperator1D::LaplaceOperator1D(const int npoints, const real_t right_bc,
     }
 }
 
-LaplaceOperator2D::LaplaceOperator2D(const int npoints_per_dim, 
-                                     const colvec_t& boundary_values,
+LaplaceOperator2D::LaplaceOperator2D(const Domain2D& domain, 
                                      const real_t scale_factor) {
+    auto npoints_per_dim = domain.get_npoints_per_dim();
+    
     //compute the discretized differences
     m_dx = 1.0 / (npoints_per_dim + 1);
 
@@ -94,51 +95,7 @@ LaplaceOperator2D::LaplaceOperator2D(const int npoints_per_dim,
     //compute the scale factor but don't multiply it into the laplacian yet
     m_scale_factor = scale_factor * std::pow(m_dx, -2.0);
 
-    //make the boundary corrector
-    m_boundary_term.resize(npoints);
-    m_boundary_term.setZero(npoints);
-    
-    /* boundary_values is a flat array of four different boundary condition
-     * vectors, the indexing scheme is illustrated by this diagram:
-     *
-     *         (4)
-     *      ----------
-     *     |          |
-     *     |          |
-     * (1) |          | (3)
-     *     |          |
-     *     |          |
-     *      ----------
-     *         (2)
-     *
-     * each edge of the boundary array must have npoints_per_dim elements, so 
-     * in total we must have 4 * npoints_per_dim elements
-     */
-    assert(boundary_values.size() == 4 * npoints_per_dim);
-    
-    //left boundary
-    for (int k = 0; k < npoints_per_dim; k++) {
-        m_boundary_term(get_gidx(0, k)) += 
-            boundary_values(k);
-    }
-
-    //bottom boundary
-    for (int k = 0; k < npoints_per_dim; k++) {
-        m_boundary_term(get_gidx(k, 0)) += 
-            boundary_values(npoints_per_dim + k);
-    }
-
-    //right boundary
-    for (int k = 0; k < npoints_per_dim; k++) {
-        m_boundary_term(get_gidx(npoints_per_dim - 1, k)) += 
-            boundary_values(npoints_per_dim * 2 + k);
-    }
-
-    //top boundary
-    for (int k = 0; k < npoints_per_dim; k++) {
-        m_boundary_term(get_gidx(k, npoints_per_dim - 1)) += 
-            boundary_values(npoints_per_dim * 3 + k);
-    }
+    m_boundary_term = domain.get_boundary_corrector();
 }
 
 colvec_t LaplaceOperator1D::apply(const colvec_t& x) const {
