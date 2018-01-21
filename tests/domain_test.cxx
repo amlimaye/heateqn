@@ -15,6 +15,7 @@ TEST(Domain2DTest, InitializationAndGetters) {
 
             auto u = d.get_interior_data();
             auto bu = d.get_boundary_data();
+            auto npoints_per_dim = d.get_npoints_per_dim();
 
             for (int k = 0; k < npoints*npoints; k++) {
                 EXPECT_DOUBLE_EQ(u[k], value);
@@ -23,6 +24,8 @@ TEST(Domain2DTest, InitializationAndGetters) {
             for (int k = 0; k < 4*npoints; k++) {
                 EXPECT_DOUBLE_EQ(bu[k], value);
             }
+
+            EXPECT_EQ(npoints_per_dim, npoints);
         }
     }
 }

@@ -13,15 +13,7 @@ Domain2D::Domain2D(int npoints_per_dim, real_t value) {
     }
 }
 
-colvec_t& Domain2D::get_interior_data() {
-    return m_interior_data;
-}
-
-colvec_t& Domain2D::get_boundary_data() {
-    return m_boundary_data;
-}
-
-colvec_t Domain2D::get_boundary_corrector() {
+colvec_t Domain2D::get_boundary_corrector() const {
     colvec_t boundary_corrector;
     boundary_corrector.resize(m_npoints_per_dim * m_npoints_per_dim);
     boundary_corrector.setZero();
