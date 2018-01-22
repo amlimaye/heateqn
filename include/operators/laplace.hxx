@@ -3,7 +3,7 @@
 #include <operators/affine_transform.hxx>
 #include <domain.hxx>
 
-class LaplaceOperator1D : public AffineTransform {
+class LaplaceOperator1D : public AffineTransform<LaplaceOperator1D> {
 public:
     //ctor
     LaplaceOperator1D(const int npoints, const real_t right_bc,
@@ -32,7 +32,7 @@ private:
     colvec_t    m_boundary_term;
 };
 
-class LaplaceOperator2D : public AffineTransform {
+class LaplaceOperator2D : public AffineTransform<LaplaceOperator2D> {
 public:
     //ctor
     LaplaceOperator2D(const Domain2D& domain, 

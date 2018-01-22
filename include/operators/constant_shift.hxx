@@ -1,7 +1,7 @@
 #include <types.hxx>
 #include <operators/affine_transform.hxx>
 
-class ConstantShift : public AffineTransform {
+class ConstantShift : public AffineTransform<ConstantShift> {
 public:
     ConstantShift(const int a_nrows, const real_t a_shift);
 
