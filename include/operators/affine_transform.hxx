@@ -1,19 +1,26 @@
 #pragma once
 #include <types.hxx>
 
+template <typename Derived>
 class AffineTransform {
 public:
     AffineTransform() {};
 
-    virtual colvec_t        apply(const colvec_t& x) const = 0;
-    virtual void            apply(colvec_t& x) const = 0;
+    colvec_t                            apply(const colvec_t& x) const;
+    void                                apply(colvec_t& x) const;
 
-    virtual colvec_t        scale(const colvec_t& x) const = 0;
-    virtual colvec_t        shift(const colvec_t& x) const = 0;
+    colvec_t                            scale(const colvec_t& x) const;
+    colvec_t                            shift(const colvec_t& x) const;
 
-    virtual void            scale(colvec_t& x) const = 0;
-    virtual void            shift(colvec_t& x) const = 0;
- 
-    virtual mat_t           get_scale() const = 0;
-    virtual colvec_t        get_shift() const = 0;
+    void                                scale(colvec_t& x) const;
+    void                                shift(colvec_t& x) const;
+
+    template <typename EigenDerived>
+    Eigen::EigenBase<EigenDerived>      get_scale() const;
+    colvec_t                            get_shift() const;
+
+private:
+    Derived& derived() {return *static_cast<Derived*>(this);};
 };
+
+#include "affine_transform.txx"

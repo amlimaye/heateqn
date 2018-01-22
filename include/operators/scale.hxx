@@ -1,7 +1,7 @@
 #include <types.hxx>
 #include <operators/affine_transform.hxx>
 
-class Scale : public AffineTransform {
+class Scale : public AffineTransform<Scale> {
 public:
     Scale(const int a_nrows, const real_t a_alpha);
 
