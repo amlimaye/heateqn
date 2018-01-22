@@ -1,3 +1,4 @@
+#include <vector>
 #include <operators/laplace.hxx>
 
 LaplaceOperator1D::LaplaceOperator1D(const int npoints, const real_t right_bc, 
@@ -50,47 +51,45 @@ LaplaceOperator2D::LaplaceOperator2D(const Domain2D& domain,
     };
 
     //zero out the laplacian matrix
-    m_laplacian_matrix.setZero(npoints, npoints);
+    m_laplacian_matrix = sparse_mat_t(npoints, npoints);
 
-    /* TODO: this could be refactored to take advantage of Eigen's
-     * symmetrization view functionality, that way we would have to set less
-     * elements... but perhaps this maps to a sparse matrix refactor in the near
-     * future a little more elegantly.
-     */
-    
-    //construct the laplacian matrix
-    m_laplacian_matrix.resize(npoints, npoints);
+    //build the sparse matrix out of triplets
+    typedef Eigen::Triplet<real_t> triplet_t;
+    std::vector<triplet_t> triplets;
+    triplets.reserve(npoints + (npoints * 2) + ((npoints - npoints_per_dim) * 2));
+   
     for (int x_idx = 0; x_idx < npoints_per_dim; x_idx++) {
         for (int y_idx = 0; y_idx < npoints_per_dim; y_idx++) {
             //set the diagonal term
             auto diag_idx = get_gidx(x_idx, y_idx);
-            m_laplacian_matrix(diag_idx, diag_idx) = -4;
+            triplets.push_back(triplet_t(diag_idx, diag_idx, -4));
 
             //set the term to the right
             if (x_idx < npoints_per_dim-1) {
                 auto right_idx = get_gidx(x_idx + 1, y_idx);
-                m_laplacian_matrix(diag_idx, right_idx) = 1;
+                triplets.push_back(triplet_t(diag_idx, right_idx, 1));
             }
 
             //set the term below
             if (y_idx < npoints_per_dim-1) {
                 auto down_idx = get_gidx(x_idx, y_idx + 1);
-                m_laplacian_matrix(diag_idx, down_idx) = 1;
+                triplets.push_back(triplet_t(diag_idx, down_idx, 1));
             }
 
             //set the term above
             if (y_idx > 0) {
                 auto above_idx = get_gidx(x_idx, y_idx - 1);
-                m_laplacian_matrix(diag_idx, above_idx) = 1;
+                triplets.push_back(triplet_t(diag_idx, above_idx, 1));
             }
 
             //set the term to the left
             if (x_idx > 0) {
                 auto left_idx = get_gidx(x_idx - 1, y_idx);
-                m_laplacian_matrix(diag_idx, left_idx) = 1;
+                triplets.push_back(triplet_t(diag_idx, left_idx, 1));
             }
         }
     }
+    m_laplacian_matrix.setFromTriplets(triplets.begin(), triplets.end());
 
     //compute the scale factor but don't multiply it into the laplacian yet
     m_scale_factor = scale_factor * std::pow(m_dx, -2.0);
@@ -160,7 +159,7 @@ mat_t LaplaceOperator1D::get_scale() const {
     return m_laplacian_matrix * m_scale_factor;
 }
 
-mat_t LaplaceOperator2D::get_scale() const {
+sparse_mat_t LaplaceOperator2D::get_scale() const {
     return m_laplacian_matrix * m_scale_factor;
 }
 
@@ -176,7 +175,7 @@ const mat_t& LaplaceOperator1D::get_laplacian() const {
     return m_laplacian_matrix;
 }
 
-const mat_t& LaplaceOperator2D::get_laplacian() const {
+const sparse_mat_t& LaplaceOperator2D::get_laplacian() const {
     return m_laplacian_matrix;
 }
 

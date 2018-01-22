@@ -124,8 +124,9 @@ TEST_F(LaplaceOperator2DTest, UnscaledLaplacian) {
 
         //construct the laplace operator and get its laplacian matrix
         auto lap = LaplaceOperator2D(domain);
-        auto lap_mat = lap.get_laplacian();
-
+        //explicitly cast to a dense matrix here because the ref impl. is dense
+        auto lap_mat = mat_t(lap.get_laplacian());
+        
         //call the reference implementation of the laplacian matrix
         mat_t ref_lap_mat;
         reference_laplacian_implementation(npoints, ref_lap_mat);
@@ -164,9 +165,9 @@ TEST_F(LaplaceOperator2DTest, UnscaledBoundaryTerm) {
 }
 
 TEST_F(LaplaceOperator2DTest, LaplacianOfAParaboloid) {
-    int nsamples = 100;
-    int npoints = 20;
-    int digits = 9;
+    int nsamples = 10;
+    int npoints = 1000;
+    int digits = 7;
 
     for (int k = 0; k < nsamples; k++) {
         //sample the paraboloid offset and curvature
@@ -200,9 +201,9 @@ TEST_F(LaplaceOperator2DTest, LaplacianOfAPlane) {
      * adds, which cuts our precision by two more digits, but i see numerically 
      * that it's actually being cut by 4 digits! investigate.
      */
-    int npoints = 20;
-    int digits = 9;
-    int nsamples = 1;
+    int npoints = 1000;
+    int digits = 7;
+    int nsamples = 10;
 
     for (int k = 0; k < nsamples; k++) {
         //prepare the domain
@@ -297,10 +298,13 @@ TEST_F(LaplaceOperator2DTest, ScaleInplaceEquivalentToScaleReturn) {
 
 TEST_F(LaplaceOperator2DTest, InternalScaleFactor) {
     std::vector<int> npoints_list = {3, 5, 10, 20, 50};
-    std::vector<real_t> alpha_list = {1.0, 5.0, 10.0, 100.0};
+    std::mt19937 gen(0);
+    std::uniform_real_distribution<> dist (1.0, 100.0);
+    int nsamples = 100;
 
     for (const auto& npoints : npoints_list) {
-        for (const auto& alpha : alpha_list) {
+        for (int k = 0; k < nsamples; k++) {
+            auto alpha = dist(gen);
             //prepare the domain
             auto domain = Domain2D(npoints);
             auto f = [&] (real_t x, real_t y) {
@@ -317,12 +321,28 @@ TEST_F(LaplaceOperator2DTest, InternalScaleFactor) {
             //check the laplacian
             auto lap_matrix_unscaled = lap.get_laplacian();
             auto lap_matrix_scaled = lap.get_scale();
+    
+            EXPECT_EQ(lap_matrix_unscaled.outerSize(), 
+                      lap_matrix_scaled.outerSize());
+
+            for (int k = 0; k < lap_matrix_scaled.outerSize(); k++) {
+                {
+                    sparse_mat_t::InnerIterator it_scaled(lap_matrix_scaled, k);
+                    sparse_mat_t::InnerIterator it_unscaled(lap_matrix_unscaled, k);
+                    for (; it_scaled; ++it_scaled, ++it_unscaled) {
+                        EXPECT_DOUBLE_EQ(it_scaled.value(), 
+                                         scale_factor*it_unscaled.value());
+                    }
+                }
+            }
+
+            /*
             for (int k = 0; k < npoints*npoints; k++) {
                 for (int l = 0; l < npoints*npoints; l++) {
                     EXPECT_DOUBLE_EQ(lap_matrix_scaled(k, l), 
                                      scale_factor * lap_matrix_unscaled(k, l));
                 }
-            }
+            }*/
 
             //check the boundary term
             auto boundary_unscaled = lap.get_boundary_term();
@@ -458,11 +478,15 @@ TEST(LaplaceOperator1DTest, UnscaledLaplacian) {
 
 TEST(LaplaceOperator1DTest, InternalScaleFactor) {
     std::vector<int> npoints_list = {5, 10, 50, 100};
-    std::vector<real_t> alpha_list = {1.0, 5.0, 10.0, 100.0};
+    std::mt19937 gen(0);
+    std::uniform_real_distribution<> dist (1.0, 100.0);
+    int nsamples = 100;
+
     real_t right_bc = 0.5;
 
     for (const auto& npoints : npoints_list) {
-        for (const auto& alpha : alpha_list) {
+        for (int k = 0; k < nsamples; k++) {
+            auto alpha = dist(gen);
             auto lap = LaplaceOperator1D(npoints, right_bc, alpha);
 
             auto dx = lap.get_dx();

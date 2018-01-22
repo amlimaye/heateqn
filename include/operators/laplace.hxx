@@ -47,16 +47,16 @@ public:
     void                scale(colvec_t& x) const;
     void                shift(colvec_t& x) const;
 
-    mat_t               get_scale() const;
+    sparse_mat_t        get_scale() const;
     colvec_t            get_shift() const;
 
     real_t              get_dx() const {return m_dx;};
-    const mat_t&        get_laplacian() const;
+    const sparse_mat_t&        get_laplacian() const;
     const colvec_t&     get_boundary_term() const;
 
 private:
     real_t      m_dx;
     real_t      m_scale_factor;
-    mat_t       m_laplacian_matrix;
+    sparse_mat_t       m_laplacian_matrix;
     colvec_t    m_boundary_term;
 };
